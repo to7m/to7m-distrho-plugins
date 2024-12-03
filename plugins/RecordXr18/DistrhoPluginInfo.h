@@ -1,0 +1,31 @@
+/*
+ * DISTRHO Plugin Framework (DPF)
+ * Copyright (C) 2012-2022 Filipe Coelho <falktx@falktx.com>
+ *
+ * Permission to use, copy, modify, and/or distribute this software for any purpose with
+ * or without fee is hereby granted, provided that the above copyright notice and this
+ * permission notice appear in all copies.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH REGARD
+ * TO THIS SOFTWARE INCLUDING ALL IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS. IN
+ * NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL
+ * DAMAGES OR ANY DAMAGES WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER
+ * IN AN ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF OR IN
+ * CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
+ */
+
+#ifndef DISTRHO_PLUGIN_INFO_H_INCLUDED
+#define DISTRHO_PLUGIN_INFO_H_INCLUDED
+
+#define DISTRHO_PLUGIN_BRAND   "to7m"
+#define DISTRHO_PLUGIN_NAME    "RecordXr18"
+#define DISTRHO_PLUGIN_URI     "https://github.com/to7m/to7m-distrho-plugins/plugins/RecordXr18"
+#define DISTRHO_PLUGIN_CLAP_ID "to7m.distrhoplugins.recordxr18"
+
+#define DISTRHO_PLUGIN_HAS_UI       0
+#define DISTRHO_PLUGIN_IS_RT_SAFE   1
+#define DISTRHO_PLUGIN_NUM_INPUTS   8
+#define DISTRHO_PLUGIN_NUM_OUTPUTS  0
+#define DISTRHO_PLUGIN_WANT_LATENCY 0
+
+#endif // DISTRHO_PLUGIN_INFO_H_INCLUDED
