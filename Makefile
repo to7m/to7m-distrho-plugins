@@ -1,14 +1,11 @@
-NAME = record_xr18
-
-FILES_DSP = plugins/RecordXr18/RecordXr18Plugin.cpp
-
 include DPF/Makefile.plugins.mk
 
-TARGETS += ladspa
-TARGETS += lv2_sep
-TARGETS += vst2
-TARGETS += vst3
-TARGETS += clap
-TARGETS += jack
 
-all: $(TARGETS)
+.PHONY: record_xr18
+
+
+all: record_xr18
+
+
+record_xr18:
+	$(MAKE) -C plugins/RecordXr18
