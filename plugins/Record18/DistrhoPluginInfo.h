@@ -18,9 +18,9 @@
 #define DISTRHO_PLUGIN_INFO_H_INCLUDED
 
 #define DISTRHO_PLUGIN_BRAND   "to7m"
-#define DISTRHO_PLUGIN_NAME    "RecordXr18"
-#define DISTRHO_PLUGIN_URI     "https://github.com/to7m/to7m-distrho-plugins/plugins/RecordXr18"
-#define DISTRHO_PLUGIN_CLAP_ID "to7m.distrhoplugins.recordxr18"
+#define DISTRHO_PLUGIN_NAME    "Record18"
+#define DISTRHO_PLUGIN_URI     "https://github.com/to7m/to7m-distrho-plugins/plugins/Record18"
+#define DISTRHO_PLUGIN_CLAP_ID "to7m.distrhoplugins.record18"
 
 #define DISTRHO_PLUGIN_HAS_UI       0
 #define DISTRHO_PLUGIN_IS_RT_SAFE   1
