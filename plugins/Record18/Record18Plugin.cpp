@@ -26,7 +26,7 @@ public:
           isFilled(nullptr)
     {
         initialise();
-        isFilled = new bool[NUM_OF_FRAGMENTS_IN_MEM];
+        isFilled = new bool[NUM_OF_FRAGMENTS_IN_MEM]();
     }
 
     ~Record18Plugin() override
@@ -97,6 +97,15 @@ protected:
             {
                 buffer[i] = input[i % currentFrames];
             }
+        }
+
+        blockI += 1;
+        if (blockI == blocksPerFragment) {
+            isFilled[fragmentI] = true;
+
+            blockI = 0;
+            fragmentI += 1;
+            fragmentI %= NUM_OF_FRAGMENTS_IN_MEM;
         }
     }
 
