@@ -5,11 +5,11 @@
 START_NAMESPACE_DISTRHO
 
 
-const NUM_OF_CHANNELS = 18;
-const DEFAULT_SAMPLE_RATE = 48000;
-const DEFAULT_FRAMES = 64;
-const FRAGMENT_DUR_S = 10;
-const NUM_OF_FRAGMENTS_IN_MEM = 5;
+const uint NUM_OF_CHANNELS = 18;
+const uint DEFAULT_SAMPLE_RATE = 48000;
+const uint DEFAULT_FRAMES = 64;
+const float FRAGMENT_DUR_S = 10;
+const uint NUM_OF_FRAGMENTS_IN_MEM = 5;
 
 
 class Record18Plugin : public Plugin
@@ -79,15 +79,15 @@ protected:
 
     void run(const float** inputs, float**, uint32_t frames) override
     {
-        if (frames != prevFrames) {
+        if (frames != currentFrames) {
             currentFrames = frames;
             initialise();
         }
 
+        const float* input;
         uint32_t startBufferI;
         uint32_t stopBufferI = fragmentI * totalFragmentSize + blockI * totalBlockSize;
-
-        for (uint32_t channelNum; channelNum < NUM_OF_CHANNELS; channelNum++)
+        for (uint32_t channelNum = 0; channelNum < NUM_OF_CHANNELS; channelNum++)
         {
             input = inputs[channelNum];
             startBufferI = stopBufferI;
