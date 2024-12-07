@@ -6,10 +6,16 @@ START_NAMESPACE_DISTRHO
 
 
 const uint NUM_OF_CHANNELS = 18;
-const uint DEFAULT_SAMPLE_RATE = 48000;
-const uint DEFAULT_FRAMES = 64;
 const float FRAGMENT_DUR_S = 10;
 const uint NUM_OF_FRAGMENTS_IN_MEM = 5;
+const uint32_t MIN_SAMPLE_RATE = 48000;
+const uint32_t MAX_SAMPLE_RATE = 48000;
+const uint32_t MIN_BLOCK_SIZE = 16;
+const uint32_t MAX_BLOCK_SIZE = 32768;
+
+const uint32_t MAX_FRAGMENT_SIZE = MAX_SAMPLE_RATE * FRAGMENT_DUR_S + MAX_BLOCK_SIZE;
+const uint32_t BUFFER_SIZE = MAX_FRAGMENT_SIZE * NUM_OF_FRAGMENTS_IN_MEM;
+const uint32_t IS_FILLED_SIZE = MAX_SAMPLE_RATE * FRAGMENT_DUR_S / MIN_BLOCK_SIZE + 2;
 
 
 class Record18Plugin : public Plugin
@@ -17,16 +23,17 @@ class Record18Plugin : public Plugin
 public:
     Record18Plugin()
         : Plugin(0, 0, 0),
-          currentSampleRate(DEFAULT_SAMPLE_RATE),
-          currentFrames(DEFAULT_FRAMES),
-          totalFragmentSize(0),
-          totalBlockSize(0),
-          blocksPerFragment(0),
+          currentSampleRate(MIN_SAMPLE_RATE),
+          currentBlockSize(MIN_BLOCK_SIZE),
+          blockI(0),
           buffer(nullptr),
           isFilled(nullptr)
     {
-        initialise();
-        isFilled = new bool[NUM_OF_FRAGMENTS_IN_MEM]();
+        buffer = new float[BUFFER_SIZE]();
+        isFilled = new bool[IS_FILLED_SIZE]();
+
+        currentSampleRate = getSampleRate();
+        environmentChanged();
     }
 
     ~Record18Plugin() override
@@ -74,60 +81,56 @@ protected:
     void sampleRateChanged(double newSampleRate) override
     {
         currentSampleRate = newSampleRate;
-        initialise();
+        environmentChanged();
     }
 
-    void run(const float** inputs, float**, uint32_t frames) override
+    void run(const float** inputChannels, float**, uint32_t blockSize) override
     {
-        if (frames != currentFrames) {
-            currentFrames = frames;
-            initialise();
+        if (blockSize != currentBlockSize) {
+            currentBlockSize = blockSize;
+            environmentChanged();
         }
 
-        const float* input;
+        const float* inputChannel;
         uint32_t startBufferI;
-        uint32_t stopBufferI = fragmentI * totalFragmentSize + blockI * totalBlockSize;
-        for (uint32_t channelNum = 0; channelNum < NUM_OF_CHANNELS; channelNum++)
+        uint32_t stopBufferI = blockI * totalBlockSize;
+        for (uint32_t channelI = 0; channelI < NUM_OF_CHANNELS; channelI++)
         {
-            input = inputs[channelNum];
+            inputChannel = inputChannels[channelI];
             startBufferI = stopBufferI;
-            stopBufferI = startBufferI + currentFrames;
+            stopBufferI = startBufferI + blockSize;
 
             for (uint32_t i = startBufferI; i < stopBufferI; i++)
             {
-                buffer[i] = input[i % currentFrames];
+                buffer[i] = inputChannel[i % blockSize];
             }
         }
 
-        blockI += 1;
-        if (blockI == blocksPerFragment) {
-            isFilled[fragmentI] = true;
-
-            blockI = 0;
-            fragmentI += 1;
-            fragmentI %= NUM_OF_FRAGMENTS_IN_MEM;
-        }
+        isFilled[blockI] = true;
+        blockI++;
+        blockI %= totalBlocks;
     }
 
 private:
-    uint32_t currentSampleRate, currentFrames;
-    uint32_t totalFragmentSize, totalBlockSize, blocksPerFragment;
-    uint32_t fragmentI, blockI;
+    uint currentSampleRate, currentBlockSize;
+    uint32_t totalBlockSize, totalBlocks;
+    uint32_t blockI;
     float* buffer;
     bool* isFilled;
+    bool isEnvironmentChanged;
 
-    void initialise()
+    void environmentChanged()
     {
-        totalBlockSize = NUM_OF_CHANNELS * currentFrames;
-        totalFragmentSize = std::ceil(FRAGMENT_DUR_S * currentSampleRate);
-        totalFragmentSize += totalFragmentSize % totalBlockSize;
-        blocksPerFragment = totalFragmentSize / totalBlockSize;
+        totalBlockSize = currentBlockSize * NUM_OF_CHANNELS;
 
-        fragmentI = blockI = 0;
+        uint32_t samplesPerFragment = std::ceil(FRAGMENT_DUR_S * currentSampleRate);
+        samplesPerFragment += samplesPerFragment % currentBlockSize;
+        uint32_t blocksPerFragment = samplesPerFragment / currentBlockSize;
+        totalBlocks = blocksPerFragment * NUM_OF_FRAGMENTS_IN_MEM;
 
-        uint32_t bufferSize = totalFragmentSize * NUM_OF_FRAGMENTS_IN_MEM;
-        delete[] buffer;
-        buffer = new float[bufferSize]();
+        blockI = 0;
+        isFilled[0] = false;
+        isEnvironmentChanged = true;
     }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Record18Plugin)
