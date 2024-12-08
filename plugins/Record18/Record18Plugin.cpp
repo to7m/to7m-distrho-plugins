@@ -119,8 +119,29 @@ private:
     bool* isFilled;
     bool isEnvironmentChanged;
 
+    void verifyEnvironment()
+    {
+        if (currentSampleRate < MIN_SAMPLE_RATE || currentSampleRate > MAX_SAMPLE_RATE)
+        {
+            throw std::runtime_error(std::format(
+                "sample rate ({}) should be in range {} <= x <= {}",
+                currentSampleRate, MIN_SAMPLE_RATE, MAX_SAMPLE_RATE
+            ));
+        }
+
+        if (currentBlockSize < MIN_BLOCK_SIZE || currentBlockSize > MAX_BLOCK_SIZE)
+        {
+            throw std::runtime_error(std::format(
+                "block size ({}) should be in range {} <= x <= {}",
+                currentBlockSize, MIN_BLOCK_SIZE, MAX_BLOCK_SIZE
+            ));
+        }
+    }
+
     void environmentChanged()
     {
+        verifyEnvironment();
+
         totalBlockSize = currentBlockSize * NUM_OF_CHANNELS;
 
         uint32_t samplesPerFragment = std::ceil(FRAGMENT_DUR_S * currentSampleRate);
