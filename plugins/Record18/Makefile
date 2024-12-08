@@ -3,6 +3,7 @@ NAME = record_18
 FILES_DSP = Record18Plugin.cpp
 
 
+DEBUG=true
 include ../../DPF/Makefile.plugins.mk
 
 
