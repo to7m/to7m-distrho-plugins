@@ -1,9 +1,7 @@
 #include <cmath>
-#include <chrono>
 #include <iostream>
 #include <sstream>
 #include <stdexcept>
-#include <thread>
 #include "DistrhoPlugin.hpp"
 
 
@@ -17,7 +15,6 @@ const uint32_t MIN_SAMPLE_RATE = 48000;
 const uint32_t MAX_SAMPLE_RATE = 48000;
 const uint32_t MIN_BLOCK_SIZE = 16;
 const uint32_t MAX_BLOCK_SIZE = 32768;
-const float THREAD_SLEEP_DUR_S = 1;
 
 const uint32_t MAX_CHANNEL_FRAGMENT_SIZE = MAX_SAMPLE_RATE * FRAGMENT_DUR_S + MAX_BLOCK_SIZE;
 const uint32_t BUFFER_SIZE
@@ -30,24 +27,23 @@ class Record18Plugin : public Plugin
 public:
     Record18Plugin()
         : Plugin(0, 0, 0),
+          currentSampleRate(MIN_SAMPLE_RATE),
           currentBlockSize(MIN_BLOCK_SIZE),
+          blockI(0),
           buffer(nullptr),
-          isFilled(nullptr),
-          isEnding(false)
+          isFilled(nullptr)
     {
         buffer = new float[BUFFER_SIZE]();
         isFilled = new bool[IS_FILLED_SIZE]();
 
         currentSampleRate = getSampleRate();
         environmentChanged();
-
-        writerThread = std::thread(&Record18Plugin::write, this);
     }
 
     ~Record18Plugin() override
     {
-        isEnding = true;
-        writerThread.join();
+        delete[] buffer;
+        delete[] isFilled;
     }
 
 protected:
@@ -126,8 +122,6 @@ private:
     float* buffer;
     bool* isFilled;
     bool isEnvironmentChanged;
-    bool isEnding;
-    std::thread writerThread;
 
     void verifyEnvironment()
     {
@@ -172,28 +166,6 @@ private:
         blockI = 0;
         isFilled[0] = false;
         isEnvironmentChanged = true;
-    }
-
-    void cleanup()
-    {
-        delete[] buffer;
-        delete[] isFilled;
-    }
-
-    void write()
-    {
-        uint32_t a;
-        while (!isEnding)
-        {
-            for (uint32_t i = 0; i < 4000000000; i++)
-            {
-                a += i / 7;
-                a %= 10000;
-            }
-            std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP_DUR_S));
-        }
-        buffer[0] = a;
-        cleanup();
     }
 
     DISTRHO_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR(Record18Plugin)
