@@ -1,4 +1,7 @@
 #include <cmath>
+#include <iostream>
+#include <sstream>
+#include <stdexcept>
 #include "DistrhoPlugin.hpp"
 
 
@@ -13,8 +16,9 @@ const uint32_t MAX_SAMPLE_RATE = 48000;
 const uint32_t MIN_BLOCK_SIZE = 16;
 const uint32_t MAX_BLOCK_SIZE = 32768;
 
-const uint32_t MAX_FRAGMENT_SIZE = MAX_SAMPLE_RATE * FRAGMENT_DUR_S + MAX_BLOCK_SIZE;
-const uint32_t BUFFER_SIZE = MAX_FRAGMENT_SIZE * NUM_OF_FRAGMENTS_IN_MEM;
+const uint32_t MAX_CHANNEL_FRAGMENT_SIZE = MAX_SAMPLE_RATE * FRAGMENT_DUR_S + MAX_BLOCK_SIZE;
+const uint32_t BUFFER_SIZE
+    = MAX_CHANNEL_FRAGMENT_SIZE * NUM_OF_CHANNELS * NUM_OF_FRAGMENTS_IN_MEM;
 const uint32_t IS_FILLED_SIZE = MAX_SAMPLE_RATE * FRAGMENT_DUR_S / MIN_BLOCK_SIZE + 2;
 
 
@@ -123,18 +127,28 @@ private:
     {
         if (currentSampleRate < MIN_SAMPLE_RATE || currentSampleRate > MAX_SAMPLE_RATE)
         {
-            throw std::runtime_error(std::format(
-                "sample rate ({}) should be in range {} <= x <= {}",
-                currentSampleRate, MIN_SAMPLE_RATE, MAX_SAMPLE_RATE
-            ));
+            std::ostringstream err;
+            err << "sample rate ("
+                << currentSampleRate
+                << ") should be in range ("
+                << MIN_SAMPLE_RATE
+                << " <= x <= "
+                << MAX_SAMPLE_RATE
+                << ")";
+            throw std::runtime_error(err.str());
         }
 
         if (currentBlockSize < MIN_BLOCK_SIZE || currentBlockSize > MAX_BLOCK_SIZE)
         {
-            throw std::runtime_error(std::format(
-                "block size ({}) should be in range {} <= x <= {}",
-                currentBlockSize, MIN_BLOCK_SIZE, MAX_BLOCK_SIZE
-            ));
+            std::ostringstream err;
+            err << "block size ("
+                << currentBlockSize
+                << ") should be in range ("
+                << MIN_BLOCK_SIZE
+                << " <= x <= "
+                << MAX_BLOCK_SIZE
+                << ")";
+            throw std::runtime_error(err.str());
         }
     }
 
