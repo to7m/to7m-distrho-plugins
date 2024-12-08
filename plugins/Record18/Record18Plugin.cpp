@@ -91,9 +91,6 @@ protected:
             environmentChanged();
         }
 
-        // debugging
-        const uint32_t bufferSize = BUFFER_SIZE;
-
         const float* inputChannel;
         uint32_t startBufferI;
         uint32_t stopBufferI = blockI * totalBlockSize;
