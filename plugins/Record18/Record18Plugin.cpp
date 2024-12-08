@@ -91,6 +91,11 @@ protected:
             environmentChanged();
         }
 
+        // debugging
+        const uint32_t bufferSize = BUFFER_SIZE;
+        uint32_t sampleOffsetFromBlock;
+        float sample;
+
         const float* inputChannel;
         uint32_t startBufferI;
         uint32_t stopBufferI = blockI * totalBlockSize;
@@ -102,7 +107,11 @@ protected:
 
             for (uint32_t i = startBufferI; i < stopBufferI; i++)
             {
-                buffer[i] = inputChannel[i % blockSize];
+                // debugging
+                sampleOffsetFromBlock = i % blockSize;
+                sample = inputChannel[sampleOffsetFromBlock];
+
+                buffer[i] = sample;
             }
         }
 
