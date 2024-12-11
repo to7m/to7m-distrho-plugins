@@ -1,0 +1,6 @@
+class FragmentWriter:
+public:
+    FragmentWriter()
+    {
+        
+    }

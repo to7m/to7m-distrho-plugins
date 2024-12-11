@@ -1,10 +1,12 @@
 #include <cmath>
 #include <chrono>
 #include <iostream>
+#include <mutex>
 #include <sstream>
 #include <stdexcept>
 #include <thread>
 #include "DistrhoPlugin.hpp"
+#include "Write.cpp"
 
 
 START_NAMESPACE_DISTRHO
@@ -121,11 +123,11 @@ protected:
 
 private:
     uint currentSampleRate, currentBlockSize;
-    uint32_t totalBlockSize, totalBlocks;
+    std::mutex lock;
+    uint32_t totalBlockSize, blocksPerFragment, totalBlocks;
     uint32_t blockI;
     float* buffer;
     bool* isFilled;
-    bool isEnvironmentChanged;
     bool isEnding;
     std::thread writerThread;
 
@@ -166,12 +168,20 @@ private:
 
         uint32_t samplesPerFragment = std::ceil(FRAGMENT_DUR_S * currentSampleRate);
         samplesPerFragment += samplesPerFragment % currentBlockSize;
-        uint32_t blocksPerFragment = samplesPerFragment / currentBlockSize;
+
+        lock.lock();
+
+        blocksPerFragment = samplesPerFragment / currentBlockSize;
         totalBlocks = blocksPerFragment * NUM_OF_FRAGMENTS_IN_MEM;
 
         blockI = 0;
-        isFilled[0] = false;
-        isEnvironmentChanged = true;
+
+        for (uint32_t i; i < IS_FILLED_SIZE; i++)
+        {
+            isFilled[i] = false;
+        }
+
+        lock.unlock();
     }
 
     void cleanup()
@@ -182,17 +192,33 @@ private:
 
     void write()
     {
-        uint32_t a;
+        uint32_t blocksPerFragmentLocal, totalBlocksLocal;
+        uint32_t lastBlockIInFragment;
+        FragmentWriter fragmentWriter();
         while (!isEnding)
         {
-            for (uint32_t i = 0; i < 4000000000; i++)
+            lock.lock();
+
+            blocksPerFragmentLocal = blocksPerFragment;
+            totalBlocksLocal = totalBlocks;
+
+            lastBlockIInFragment = blocksPerFragment - 1;
+
+            lock.unlock();
+
+            if (isFilled[lastBlockIInFragment])
             {
-                a += i / 7;
-                a %= 10000;
+                isFilled[lastBlockIInFragment] = false;
+
+                fragmentWriter.tryWriteFragment();
+
+                lastBlockIInFragment += localBlocksPerFragment;
+                lastBlockIInFragment %= totalBlocksLocal;
             }
+
             std::this_thread::sleep_for(std::chrono::duration<float>(THREAD_SLEEP_DUR_S));
         }
-        buffer[0] = a;
+
         cleanup();
     }
 
